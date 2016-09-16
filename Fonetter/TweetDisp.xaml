@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="Fonetter.TweetDisp"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Fonetter"
+             mc:Ignorable="d" MinWidth="300">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="auto"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<WrapPanel Name="wpStatus" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+			<TextBlock VerticalAlignment="Center">
+				<Hyperlink Name="unHyperLink" NavigateUri="ff" TextDecorations="None" Click="UserHL_Click">
+					<Hyperlink.Style>
+						<Style TargetType="Hyperlink">
+							<Setter Property="Foreground" Value="Black"/>
+						</Style>
+					</Hyperlink.Style>
+					<Run Text="@Breaker_LDG" Name="unsRun" FontWeight="Bold"/>
+				</Hyperlink>
+				<Run Text="Retweeted this Tweet at" Name="stRun"/>
+				<Run Text="16/09/16" Name="dateRun"/>
+				<Run Text="15:00:00" Name="timeRun"/>
+			</TextBlock>
+		</WrapPanel>
+		<WrapPanel Grid.Row="1" Grid.Column="0" Grid.RowSpan="4" Orientation="Vertical">
+			<Image Height="50" Width="50" HorizontalAlignment="Center" Name="imgIcon"/>
+		</WrapPanel>
+		<DockPanel Grid.Row="1" Grid.Column="1">
+			<TextBlock VerticalAlignment="Center" Margin="5" DockPanel.Dock="Right">
+				<Run Text="16/09/15" Name="lbDate"/>
+				<Run Text="14:11:00" Name="lbTime"/>
+			</TextBlock>
+			<TextBlock VerticalAlignment="Center" Margin="5">
+				<Hyperlink Name="dispHyperLink" NavigateUri="ff" TextDecorations="None" Click="UserHL_Click">
+					<Hyperlink.Style>
+						<Style TargetType="Hyperlink">
+							<Setter Property="Foreground" Value="Black"/>
+						</Style>
+					</Hyperlink.Style>
+					<Run Text="JI1LDG/1" Name="undRun" FontWeight="Bold"/>
+					<Run Text="@Yama_LDG" Name="sndRun"/>
+				</Hyperlink>
+			</TextBlock>
+		</DockPanel>
+		<TextBlock Grid.Row="2" Grid.Column="1" Text="Tweets" Margin="5" Name="TweetText" TextWrapping="WrapWithOverflow"/>
+		<DockPanel Grid.Row="3" Grid.Column="1">
+			<WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+				<Label Content="RT" Name="lbRetweet"/>
+				<Label Content="Fv" Name="lbFavorite"/>
+				<Label Content="Rp" Name="lbReply"/>
+			</WrapPanel>
+			<TextBlock VerticalAlignment="Center" Margin="5">
+				<Hyperlink Name="viaHyperLink" NavigateUri="ff" TextDecorations="None" Click="UriHL_Click">
+					<Hyperlink.Style>
+						<Style TargetType="Hyperlink">
+							<Setter Property="Foreground" Value="Black"/>
+						</Style>
+					</Hyperlink.Style>
+					<Run Text="via Fonetter" Name="viaRun"/>
+				</Hyperlink>
+			</TextBlock>
+		</DockPanel>
+	</Grid>
+</UserControl>

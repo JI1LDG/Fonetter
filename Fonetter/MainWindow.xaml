@@ -1,0 +1,31 @@
+﻿<Window x:Class="Fonetter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Fonetter"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525" MinHeight="250" MinWidth="350">
+	<DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="TweetOpen" Name="miTweet" Click="miTweet_Click"/>
+			<MenuItem Header="StreamReflesh" Name="miReflesh" Click="miReflesh_Click"/>
+			<MenuItem Header="Help"/>
+		</Menu>
+		<Grid DockPanel.Dock="Top" Name="gUpdate" Height="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto"/>
+				<RowDefinition Height="auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="50"/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="50" Width="50"/>
+			<DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
+				<TextBox TextWrapping="Wrap" Name="tbTweet" AcceptsReturn="True" AcceptsTab="True" MaxLines="5"  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+			</DockPanel>
+		</Grid>
+		<Grid Name="grd" ShowGridLines="True" SizeChanged="grd_SizeChanged"/>
+	</DockPanel>
+</Window>
