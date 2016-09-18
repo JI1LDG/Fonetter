@@ -1,6 +1,9 @@
-﻿using System;
+﻿using CoreTweet;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,16 +23,34 @@ namespace Fonetter {
 	/// </summary>
 	public partial class MainWindow : Window {
 		private TimeLineGrid tlGrid;
-		private Accounts ac;
+		private List<Accounts> ac;
+		private int accountNowSelected;
+		private Accounts nowAccount { get { return ac[accountNowSelected]; } }
+		private int cacheRow, cacheCol;
 
 		public MainWindow() {
-			InitializeComponent();
 			tlGrid = new Fonetter.TimeLineGrid() { MinHeight = 150, MinWidth = 300, MaxColumns = 4, MaxRows = 3, Mode = GridMode.Left, };
-			ac = new Accounts();
-			tlGrid.AddTimeLine(new Fonetter.TimeLine(ac.Tweets));
+			ac = new List<Accounts>();
+			using(var sr = new StreamReader("Keys.txt", System.Text.Encoding.UTF8)) {
+				while(sr.Peek() > 0) {
+					var keys = new string[4];
+					for(int i = 0; i < 4; i++) {
+						keys[i] = sr.ReadLine();
+					}
+					var token = Tokens.Create(keys[0], keys[1], keys[2], keys[3]);
+					var a = new Accounts(token, ac);
+					ac.Add(a);
+					tlGrid.AddTimeLine(new Fonetter.TimeLine(a.Tweets));
+				}
+			}
+			InitializeComponent();
+
+			if(ac.Count > 0) {
+				imgAccount.AsyncLoad(ac[0].Data.IconUri);
+				accountNowSelected = 0;
+			}
 
 			grd_Adjust(grd.RenderSize);
-			PutUis();
 		}
 
 		~MainWindow() {
@@ -66,7 +87,12 @@ namespace Fonetter {
 				if(cols > tlGrid.MaxColumns) cols = tlGrid.MaxColumns;
 			}
 
-			grd.AddCell((int)rows, (int)cols);
+			if(cacheRow != (int)rows || cacheCol != (int)cols) {
+				grd.AddCell((int)rows, (int)cols);
+				cacheRow = (int)rows;
+				cacheCol = (int)cols;
+				PutUis();
+			}
 		}
 
 		private void PutUis() {
@@ -99,25 +125,48 @@ namespace Fonetter {
 
 		private void grd_SizeChanged(object sender, SizeChangedEventArgs e) {
 			grd_Adjust(e.NewSize);
-			PutUis();
 		}
 
 		private void miTweet_Click(object sender, RoutedEventArgs e) {
 			if(gUpdate.Height == 0) {
 				gUpdate.Height = double.NaN;
-				miTweet.Header = "TweetClose";
 			} else {
 				gUpdate.Height = 0;
-				miTweet.Header = "TweetOpen";
 			}
 		}
 
 		private void miReflesh_Click(object sender, RoutedEventArgs e) {
-			ac.StopStreaming();
+			ac[0].StopStreaming();
 			Console.WriteLine("Wait!");
 			System.Threading.Thread.Sleep(10 * 1000);
 			Console.WriteLine("Restart!");
-			ac.StartStreaming();
+			ac[0].StartStreaming();
+		}
+
+		private void btnAccount_Click(object sender, RoutedEventArgs e) {
+			if(ac.Count <= 0) return;
+			accountNowSelected++;
+			if(accountNowSelected / ac.Count >= 1.0f) accountNowSelected %= ac.Count;
+			imgAccount.AsyncLoad(ac[accountNowSelected].Data.IconUri);
+		}
+
+		private async void btnUpdate_Click(object sender, RoutedEventArgs e) {
+			btnUpdate.IsEnabled = false;
+			try {
+				var response = await nowAccount.UpdateStatusAsync(tbTweet.Text);
+			} catch(TwitterException te) {
+				MessageBox.Show("ツイート失敗しました。 (" + te.Message + ")");
+			}
+			btnUpdate.IsEnabled = true;
+
+			tbTweet.Text = "";
+		}
+
+		private void tbTweet_TextChanged(object sender, TextChangedEventArgs e) {
+			var lastLen = 140 - tbTweet.Text.LetterLen();
+			lbLetter.Content = lastLen;
+			if(lastLen < 0 || lastLen == 140) btnUpdate.IsEnabled = false;
+			else btnUpdate.IsEnabled = true;
 		}
 	}
 }

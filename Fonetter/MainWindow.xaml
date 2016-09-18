@@ -8,22 +8,29 @@
         Title="MainWindow" Height="350" Width="525" MinHeight="250" MinWidth="350">
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
-			<MenuItem Header="TweetOpen" Name="miTweet" Click="miTweet_Click"/>
+			<MenuItem Header="Tweet" Name="miTweet" Click="miTweet_Click"/>
 			<MenuItem Header="StreamReflesh" Name="miReflesh" Click="miReflesh_Click"/>
 			<MenuItem Header="Help"/>
 		</Menu>
-		<Grid DockPanel.Dock="Top" Name="gUpdate" Height="0">
+		<Grid DockPanel.Dock="Top" Name="gUpdate">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="auto"/>
 				<RowDefinition Height="auto"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="50"/>
+				<ColumnDefinition Width="45"/>
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
-			<Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="50" Width="50"/>
+			<Button Name="btnAccount" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="45" Width="45" Click="btnAccount_Click">
+				<Image Name="imgAccount" Height="40" Width="40" HorizontalAlignment="Center"/>
+			</Button>
 			<DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
-				<TextBox TextWrapping="Wrap" Name="tbTweet" AcceptsReturn="True" AcceptsTab="True" MaxLines="5"  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+				<TextBox TextWrapping="Wrap" Name="tbTweet" AcceptsReturn="True" AcceptsTab="True" MaxLines="5"  ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="tbTweet_TextChanged"/>
+			</DockPanel>
+			<DockPanel Grid.Row="1" Grid.Column="1">
+				<Button Name="btnUpdate" Content="Tweet!" DockPanel.Dock="Right" IsEnabled="False" Click="btnUpdate_Click"/>
+				<Label Name="lbLetter" Content="140" DockPanel.Dock="Left"/>
+				<Label/>
 			</DockPanel>
 		</Grid>
 		<Grid Name="grd" ShowGridLines="True" SizeChanged="grd_SizeChanged"/>

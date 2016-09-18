@@ -56,7 +56,7 @@
 		<TextBlock Grid.Row="2" Grid.Column="1" Text="Tweets" Margin="5" Name="TweetText" TextWrapping="WrapWithOverflow"/>
 		<DockPanel Grid.Row="3" Grid.Column="1">
 			<WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-				<Label Content="RT" Name="lbRetweet"/>
+				<Button Content=" RT " Name="btRetweet" Click="btRetweet_Click"/>
 				<Label Content="Fv" Name="lbFavorite"/>
 				<Label Content="Rp" Name="lbReply"/>
 			</WrapPanel>

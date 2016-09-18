@@ -48,14 +48,40 @@ namespace Fonetter {
 			IsRetweeted = status.IsRetweeted == true ? true : false;
 			IsFavorited = status.IsFavorited == true ? true : false;
 			
-			string href = @"<a\s+[^>]*href\s*=\s*(?:(?<quot>[""'])(?<url>.*?)\k<quot>|" + @"(?<url>[^\s>]+))[^>]*>(?<text>.*?)</a>";
-			MatchCollection mc = Regex.Matches(status.Source, href, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+			var mc = status.Source.GetDataFromLink();
 			ViaUri = mc[0].Groups["url"].Value;
 			ViaName = mc[0].Groups["text"].Value;
 		}
 	}
 
+	public class RetweetData : TweetData {
+		public long RtingId { get; set; }
+		public string RtingScreenName { get; set; }
+		public string RtingUserName { get; set; }
+		public DateTime RtingCreatedTime { get; set; }
+
+		public RetweetData(Status status) : base(status.RetweetedStatus) {
+			var id = TweetId;
+			TweetId = status.Id;
+			RtingId = id;
+			RtingScreenName = status.User.ScreenName;
+			RtingUserName = status.User.Name;
+			RtingCreatedTime = status.CreatedAt.LocalDateTime;
+		}
+	}
+
 	public enum StreamStatus {
 		Wait, Streaming, Stop,
+	}
+
+	public class AccountData {
+		private UserResponse user;
+		public string IconUri { get { return user.ProfileImageUrl; } }
+		public string ScreenName { get { return user.ScreenName; } }
+		public long UserId { get { return (long)user.Id; } }
+
+		public AccountData(UserResponse userResponse) {
+			this.user = userResponse;
+		}
 	}
 }
