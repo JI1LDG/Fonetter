@@ -5,10 +5,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Fonetter {
 	public class Accounts {
@@ -25,8 +28,19 @@ namespace Fonetter {
 			Tweets = new ObservableCollection<TweetDisp>();
 			StreamState = StreamStatus.Stop;
 			token = tokens;
-				
-			var ur = token.Account.VerifyCredentials();
+
+			UserResponse ur;
+			try {
+				ur = token.Account.VerifyCredentials();
+			} catch(Exception e) {
+				if(e is SocketException || e is WebException) {
+					Console.WriteLine("Failed to Connect (" + e.Message + ")");
+				} else {
+					MessageBox.Show("Unknown Error occured. (" + e.Message + ")");
+					Environment.Exit(0);
+				}
+				return;
+			}
 			token.ScreenName = ur.ScreenName;
 			token.UserId = (long)ur.Id;
 			Data = new AccountData(ur);
@@ -59,7 +73,11 @@ namespace Fonetter {
 			};
 			Action<DeleteMessage> DeleteOnNextAction = (message) => {
 				var del = Tweets.Where(x => x.data.TweetId == message.Id || ((x.data is RetweetData) && (x.data as RetweetData).RtingId == message.Id)).ToArray();
-				if(del.Count() > 0) { foreach(var d in del) { Tweets.Remove(d); } }
+				if(del.Count() > 0) {
+					foreach(var d in del) {
+						Tweets.Remove(d);
+					}
+				}
 				Console.WriteLine("Remove: " + message.Id);
 			};
 			Action<Exception> OnExceptionAction = (message) => {
@@ -93,6 +111,18 @@ namespace Fonetter {
 			}
 		}
 
+		public string Retweeting(long TweetId) {
+			try {
+				token.Statuses.Retweet(id => TweetId);
+				return "ok";
+			} catch (CoreTweet.TwitterException e) {
+				if(e.Message == "You have already retweeted this tweet.") {
+					return "already";
+				}
+				return e.Message;
+			}
+		}
+
 		public string DestroyWithRetweet(long TweetId) {
 			long idUR;
 			try {
@@ -105,18 +135,6 @@ namespace Fonetter {
 				return e2.Message;
 			}
 			return DestroyStatus(idUR);
-		}
-
-		public string Retweeting(long TweetId) {
-			try {
-				token.Statuses.Retweet(id => TweetId);
-				return "ok";
-			} catch (CoreTweet.TwitterException e) {
-				if(e.Message == "You have already retweeted this tweet.") {
-					return "already";
-				}
-				return e.Message;
-			}
 		}
 	}
 }

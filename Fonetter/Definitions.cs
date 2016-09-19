@@ -9,9 +9,12 @@ namespace Fonetter {
 		public double MinWidth { get; set; }
 		public int MaxRows { get; set; }
 		public int MaxColumns { get; set; }
-		public int ContentsNum { get { return Timelines.Count; } }
+		public int ContentsNum { get { return Timelines.Count - startIdx; } }
 		public GridMode Mode { get; set; }
 		public List<TimeLine> Timelines { get; private set; }
+		public int startIdx { get; set; }
+		public int cacheRow { get; set; }
+		public int cacheCol { get; set; }
 
 		public TimeLineGrid() {
 			Timelines = new List<TimeLine>();

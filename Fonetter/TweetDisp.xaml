@@ -57,8 +57,8 @@
 		<DockPanel Grid.Row="3" Grid.Column="1">
 			<WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
 				<Button Content=" RT " Name="btRetweet" Click="btRetweet_Click"/>
-				<Label Content="Fv" Name="lbFavorite"/>
-				<Label Content="Rp" Name="lbReply"/>
+				<Button Content=" Fv " Name="btFavorite" Click="btFavorite_Click"/>
+				<Button Content=" Rp " Name="btReply" Click="btReply_Click"/>
 			</WrapPanel>
 			<TextBlock VerticalAlignment="Center" Margin="5">
 				<Hyperlink Name="viaHyperLink" NavigateUri="ff" TextDecorations="None" Click="UriHL_Click">

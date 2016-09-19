@@ -97,5 +97,13 @@ namespace Fonetter {
 				}
 			}
 		}
+
+		private void btFavorite_Click(object sender, RoutedEventArgs e) {
+
+		}
+
+		private void btReply_Click(object sender, RoutedEventArgs e) {
+
+		}
 	}
 }

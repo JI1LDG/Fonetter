@@ -26,10 +26,10 @@ namespace Fonetter {
 		private List<Accounts> ac;
 		private int accountNowSelected;
 		private Accounts nowAccount { get { return ac[accountNowSelected]; } }
-		private int cacheRow, cacheCol;
+		private int startIdx;
 
 		public MainWindow() {
-			tlGrid = new Fonetter.TimeLineGrid() { MinHeight = 150, MinWidth = 300, MaxColumns = 4, MaxRows = 3, Mode = GridMode.Left, };
+			tlGrid = new Fonetter.TimeLineGrid() { MinHeight = 150, MinWidth = 300, MaxColumns = 4, MaxRows = 3, Mode = GridMode.Left, startIdx = 0, };
 			ac = new List<Accounts>();
 			using(var sr = new StreamReader("Keys.txt", System.Text.Encoding.UTF8)) {
 				while(sr.Peek() > 0) {
@@ -39,8 +39,9 @@ namespace Fonetter {
 					}
 					var token = Tokens.Create(keys[0], keys[1], keys[2], keys[3]);
 					var a = new Accounts(token, ac);
+					if(a.Data == null) break;
 					ac.Add(a);
-					tlGrid.AddTimeLine(new Fonetter.TimeLine(a.Tweets));
+					tlGrid.AddTimeLine(new Fonetter.TimeLine(a.Tweets) { TlName = "TL: @" + a.Data.ScreenName , });
 				}
 			}
 			InitializeComponent();
@@ -87,10 +88,11 @@ namespace Fonetter {
 				if(cols > tlGrid.MaxColumns) cols = tlGrid.MaxColumns;
 			}
 
-			if(cacheRow != (int)rows || cacheCol != (int)cols) {
+			if(tlGrid.cacheRow != (int)rows || tlGrid.cacheCol != (int)cols || startIdx != tlGrid.startIdx) {
+				tlGrid.startIdx = startIdx;
 				grd.AddCell((int)rows, (int)cols);
-				cacheRow = (int)rows;
-				cacheCol = (int)cols;
+				tlGrid.cacheRow = (int)rows;
+				tlGrid.cacheCol = (int)cols;
 				PutUis();
 			}
 		}
@@ -107,7 +109,7 @@ namespace Fonetter {
 
 			for(int r = 0; r < h; r++) {
 				for(int c = 0; c < w && tlGrid.ContentsNum > r * w + c; c++) {
-					var tl = tlGrid.Timelines[r * w + c];
+					var tl = tlGrid.Timelines[r * w + c + tlGrid.startIdx];
 					if(tlGrid.ContentsNum >= h * w) {
 					} else {
 						rspan = 1; alph_c = 0;
@@ -124,6 +126,9 @@ namespace Fonetter {
 		}
 
 		private void grd_SizeChanged(object sender, SizeChangedEventArgs e) {
+			if(tlGrid.Timelines.Count == 0) return;
+			startIdx %= tlGrid.Timelines.Count;
+			tlGrid.startIdx = startIdx;
 			grd_Adjust(e.NewSize);
 		}
 
@@ -136,11 +141,13 @@ namespace Fonetter {
 		}
 
 		private void miReflesh_Click(object sender, RoutedEventArgs e) {
-			ac[0].StopStreaming();
-			Console.WriteLine("Wait!");
-			System.Threading.Thread.Sleep(10 * 1000);
-			Console.WriteLine("Restart!");
-			ac[0].StartStreaming();
+			foreach(var a in ac) {
+				a.StopStreaming();
+				Console.WriteLine("Wait!");
+				System.Threading.Thread.Sleep(10 * 1000);
+				Console.WriteLine("Restart!");
+				a.StartStreaming();
+			}
 		}
 
 		private void btnAccount_Click(object sender, RoutedEventArgs e) {
@@ -165,8 +172,15 @@ namespace Fonetter {
 		private void tbTweet_TextChanged(object sender, TextChangedEventArgs e) {
 			var lastLen = 140 - tbTweet.Text.LetterLen();
 			lbLetter.Content = lastLen;
-			if(lastLen < 0 || lastLen == 140) btnUpdate.IsEnabled = false;
+			if((lastLen < 0 || lastLen == 140) || tlGrid.Timelines.Count == 0) btnUpdate.IsEnabled = false;
 			else btnUpdate.IsEnabled = true;
+		}
+
+		private void miSelection_Click(object sender, RoutedEventArgs e) {
+			if(tlGrid.Timelines.Count == 0) return;
+			startIdx++;
+			startIdx %= tlGrid.Timelines.Count;
+			grd_Adjust(grd.RenderSize);
 		}
 	}
 }
