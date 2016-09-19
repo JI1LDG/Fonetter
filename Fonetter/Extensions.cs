@@ -33,7 +33,7 @@ namespace Fonetter {
 					setFor.ColumnDefinitions.Add(new ColumnDefinition());
 				}
 			} else if(c > column) {
-				setFor.ColumnDefinitions.RemoveRange(column - 1, c - column);
+				setFor.ColumnDefinitions.RemoveRange(column, c - column);
 			}
 		}
 

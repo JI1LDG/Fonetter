@@ -69,12 +69,14 @@ namespace Fonetter {
 			if(cols < 2.0f) cols = 1.0f;
 			else cols = Math.Floor(cols);
 
-			if(tlGrid.ContentsNum <= cols && tlGrid.ContentsNum <= tlGrid.MaxColumns) {
-				cols = tlGrid.ContentsNum;
+			int cn = tlGrid.Timelines.Count - startIdx;
+
+			if(cn <= cols && cn <= tlGrid.MaxColumns) {
+				cols = cn;
 				rows = 1;
-			} else if(tlGrid.ContentsNum <= tlGrid.MaxRows * tlGrid.MaxColumns) {
+			} else if(cn <= tlGrid.MaxRows * tlGrid.MaxColumns) {
 				for(int i = 2; i <= rows; i++) {
-					var mc = Math.Ceiling((double)tlGrid.ContentsNum / (double)i);
+					var mc = Math.Ceiling((double)cn / (double)i);
 					if(mc <= cols && mc <= tlGrid.MaxColumns) {
 						cols = mc;
 						rows = i;
