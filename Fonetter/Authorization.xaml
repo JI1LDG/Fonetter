@@ -1,0 +1,78 @@
+﻿<Window x:Class="Fonetter.Authorization"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Fonetter"
+        mc:Ignorable="d"
+        Title="Authorization" Height="300" Width="400">
+	<TabControl Name="tabc">
+		<TabItem Header="Consumer">
+			<DockPanel>
+				<Grid DockPanel.Dock="Bottom">
+					<Grid.RowDefinitions>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition/>
+						<ColumnDefinition/>
+						<ColumnDefinition/>
+					</Grid.ColumnDefinitions>
+					<Button Name="btcReload" Grid.Row="0" Grid.Column="0" Content="Reload" Click="btcReload_Click"/>
+					<Button Name="btcEdit" Grid.Row="0" Grid.Column="1" Content="Edit" Click="btcEdit_Click"/>
+					<Button Name="btcUpdate" Grid.Row="0" Grid.Column="2" Content="Update" Click="btcUpdate_Click"/>
+					<Label Grid.Row="1" Grid.Column="0" Content="Name: "/>
+					<TextBox Name="tbcName" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"/>
+					<Label Grid.Row="2" Grid.Column="0" Content="ConsumerKey: "/>
+					<TextBox Name="tbcKey" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"/>
+					<Label Grid.Row="3" Grid.Column="0" Content="ConsumerSecret: "/>
+					<TextBox Name="tbcSecret" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"/>
+					<Button Name="btcAdd" Grid.Row="4" Grid.Column="2" Content="Add" Click="btcAdd_Click"/>
+				</Grid>
+				<DataGrid Name="dgcData" AutoGenerateColumns="False" ItemsSource="{Binding cons, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True">
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding Name}" Header="Name"/>
+						<DataGridTextColumn Binding="{Binding Key}" Header="Key"/>
+						<DataGridTextColumn Binding="{Binding Secret}" Header="Secret"/>
+					</DataGrid.Columns>
+				</DataGrid>
+			</DockPanel>
+		</TabItem>
+		<TabItem Header="User">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="auto"/>
+					<RowDefinition Height="auto"/>
+					<RowDefinition Height="auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+				<Label Grid.Row="0" Grid.Column="0" Content="User: "/>
+				<ComboBox Name="cbuUser" Grid.Row="0" Grid.Column="1"/>
+				<Label Grid.Row="0" Grid.Column="2" Content="Consumer: "/>
+				<ComboBox Name="cbuConsumer" Grid.Row="0" Grid.Column="3" SelectionChanged="cbuConsumer_SelectionChanged"/>
+				<Label Grid.Row="1" Grid.Column="0" Content="PIN: "/>
+				<TextBox Name="tbuPin" Grid.Row="1" Grid.Column="1"/>
+				<Button Name="btuConfirm" Grid.Row="1" Grid.Column="2" Content="Confirm" IsEnabled="False" Click="btuConfirm_Click" Margin="2"/>
+				<Button Name="btuExecute" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="1" Content="Auth/Select" IsEnabled="False" Click="btuExecute_Click" Margin="2"/>
+				<DataGrid Name="dguData" AutoGenerateColumns="False" ItemsSource="{Binding selects, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4">
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="ID" Binding="{Binding ScreenName}"/>
+						<DataGridTextColumn Header="ConsumerName" Binding="{Binding Name}"/>
+					</DataGrid.Columns>
+				</DataGrid>
+			</Grid>
+		</TabItem>
+		<TabItem Header="TimeLine">
+		
+		</TabItem>
+	</TabControl>
+</Window>

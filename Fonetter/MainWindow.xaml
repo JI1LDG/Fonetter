@@ -5,16 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Fonetter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525" MinHeight="250" MinWidth="350">
+        Title="MainWindow" Height="350" Width="525" MinHeight="250" MinWidth="350" Closing="Window_Closing" Closed="Window_Closed">
 	<DockPanel>
 		<Menu DockPanel.Dock="Top">
 			<MenuItem Header="Tweet" Name="miTweet" Click="miTweet_Click"/>
 			<MenuItem Header="StreamReflesh" Name="miReflesh" Click="miReflesh_Click"/>
 			<MenuItem Header="Select" Name="miSelection" Click="miSelection_Click"/>
+			<MenuItem Header="Authorize" Name="miAuth" Click="miAuth_Click"/>
 			<MenuItem Header="Help"/>
 		</Menu>
 		<Grid DockPanel.Dock="Top" Name="gUpdate">
 			<Grid.RowDefinitions>
+				<RowDefinition Height="auto"/>
 				<RowDefinition Height="auto"/>
 				<RowDefinition Height="auto"/>
 			</Grid.RowDefinitions>
@@ -22,18 +24,22 @@
 				<ColumnDefinition Width="45"/>
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
-			<Button Name="btnAccount" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Height="45" Width="45" Click="btnAccount_Click">
+			<Button Name="btnAccount" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Height="45" Width="45" Click="btnAccount_Click">
 				<Image Name="imgAccount" Height="40" Width="40" HorizontalAlignment="Center"/>
 			</Button>
 			<DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
+				<Button Name="btnClearReply" DockPanel.Dock="Right" IsEnabled="False" Content=" Clear Reply " Click="btnClearReply_Click"/>
+				<TextBlock Name="tbReplyText"/>
+			</DockPanel>
+			<DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True">
 				<TextBox TextWrapping="Wrap" Name="tbTweet" AcceptsReturn="True" AcceptsTab="True" MaxLines="5"  ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="tbTweet_TextChanged"/>
 			</DockPanel>
-			<DockPanel Grid.Row="1" Grid.Column="1">
+			<DockPanel Grid.Row="2" Grid.Column="1">
 				<Button Name="btnUpdate" Content="Tweet!" DockPanel.Dock="Right" IsEnabled="False" Click="btnUpdate_Click"/>
 				<Label Name="lbLetter" Content="140" DockPanel.Dock="Left"/>
 				<Label/>
 			</DockPanel>
 		</Grid>
-		<Grid Name="grd" ShowGridLines="True" SizeChanged="grd_SizeChanged"/>
+		<Grid Name="grd" SizeChanged="grd_SizeChanged"/>
 	</DockPanel>
 </Window>

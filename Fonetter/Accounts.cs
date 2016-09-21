@@ -12,6 +12,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Fonetter {
 	public class Accounts {
@@ -22,12 +23,15 @@ namespace Fonetter {
 		private Tokens token;
 		private IConnectableObservable<StreamingMessage> stream;
 		private IDisposable disposable;
+		private ReplyControl updateBox;
 
-		public Accounts(Tokens tokens, List<Accounts> accounts) {
+		public Accounts(Tokens tokens, List<Accounts> accounts, ReplyControl tbox, ObservableCollection<TweetDisp> tmpTweets = null) {
 			AccountList = accounts;
-			Tweets = new ObservableCollection<TweetDisp>();
+			if(tmpTweets == null) Tweets = new ObservableCollection<TweetDisp>();
+			else Tweets = tmpTweets;
 			StreamState = StreamStatus.Stop;
 			token = tokens;
+			updateBox = tbox;
 
 			UserResponse ur;
 			try {
@@ -37,7 +41,6 @@ namespace Fonetter {
 					Console.WriteLine("Failed to Connect (" + e.Message + ")");
 				} else {
 					MessageBox.Show("Unknown Error occured. (" + e.Message + ")");
-					Environment.Exit(0);
 				}
 				return;
 			}
@@ -48,16 +51,20 @@ namespace Fonetter {
 			StartStreaming();
 		}
 
+		~Accounts() {
+			StopStreaming();
+		}
+
 		private async void GetLastTweets() {
 			if(Tweets.Count == 0) {
 				foreach(var status in await token.Statuses.HomeTimelineAsync(count => 50)) {
-					Tweets.Add(new TweetDisp(status.Convert(), Data, AccountList));
+					Tweets.Add(new TweetDisp(status.Convert(), Data, AccountList, updateBox));
 				}
 			} else {
 				int i = 0;
 				foreach(var status in await token.Statuses.HomeTimelineAsync(since_id => Tweets.Max(x => x.data.TweetId).ToString())) {
 					if(Tweets.Any(x => x.data.TweetId == status.Id)) break;
-					Tweets.Insert(i++, new Fonetter.TweetDisp(status.Convert(), Data, AccountList));
+					Tweets.Insert(i++, new Fonetter.TweetDisp(status.Convert(), Data, AccountList, updateBox));
 				}
 			}
 		}
@@ -68,7 +75,7 @@ namespace Fonetter {
 
 			Action<Status> StatusOnNextAction = (message) => {
 				StreamState = StreamStatus.Streaming;
-				Tweets.Insert(0, new TweetDisp(message.Convert(), Data, AccountList));
+				Tweets.Insert(0, new TweetDisp(message.Convert(), Data, AccountList, updateBox));
 				Console.WriteLine("Create: " + message.Text);
 			};
 			Action<DeleteMessage> DeleteOnNextAction = (message) => {
@@ -98,43 +105,70 @@ namespace Fonetter {
 			Console.WriteLine("Stop");
 		}
 
-		public async Task<StatusResponse> UpdateStatusAsync(string Text) {
-			return await token.Statuses.UpdateAsync(status => Text);
+		public string UpdateStatus(string Text) {
+			try {
+				token.Statuses.Update(status => Text);
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
+			}
+		}
+
+		public string UpdateStatus(string Text, long ReplyTo) {
+			try {
+				token.Statuses.Update(status => Text, in_reply_to_status_id => ReplyTo);
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
+			}
 		}
 
 		public string DestroyStatus(long TweetId) {
 			try {
 				token.Statuses.Destroy(id => TweetId);
-				return "ok";
-			} catch(TwitterException e) {
-				return e.Message;
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
 			}
 		}
 
-		public string Retweeting(long TweetId) {
+		public string RetweetStatus(long TweetId) {
 			try {
 				token.Statuses.Retweet(id => TweetId);
-				return "ok";
-			} catch (CoreTweet.TwitterException e) {
-				if(e.Message == "You have already retweeted this tweet.") {
-					return "already";
-				}
-				return e.Message;
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
 			}
 		}
 
-		public string DestroyWithRetweet(long TweetId) {
+		public string DestroyRetweet(long TweetId) {
 			long idUR;
 			try {
 				var sr = token.Statuses.Show(id => TweetId, include_my_retweet => "true");
 				var i = sr.CurrentUserRetweet;
 				idUR = (long)i;
-			} catch(TwitterException e) {
-				return e.Message;
-			} catch(Exception e2) {
-				return e2.Message;
+			} catch(Exception e) {
+				return e.DetectException();
 			}
 			return DestroyStatus(idUR);
+		}
+
+		public string FavoriteStatus(long TweetId) {
+			try {
+				token.Favorites.Create(id => TweetId);
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
+			}
+		}
+
+		public string DestroyFavorite(long TweetId) {
+			try {
+				token.Favorites.Destroy(id => TweetId);
+				return ExceptionCheck.Ok.ToString();
+			} catch(Exception e) {
+				return e.DetectException();
+			}
 		}
 	}
 }

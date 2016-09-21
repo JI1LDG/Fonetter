@@ -28,7 +28,7 @@ namespace Fonetter {
 		private ScrollBar scrollBar;
 		public string TlName { get; set; }
 		private Dictionary<TweetDisp, double> heights;
-		private long nowId;
+		private DateTime nowTime;
 		private double removeHeight;
 
 		public TimeLine(ObservableCollection<TweetDisp> home) {
@@ -40,8 +40,7 @@ namespace Fonetter {
 			tw = home;
 			tw.CollectionChanged += Tw_CollectionChanged;
 
-			max = scrollBar.Maximum;
-			currVal = scrollBar.Value;
+			max = -1;
 			heights = new Dictionary<Fonetter.TweetDisp, double>();
 		}
 
@@ -50,6 +49,11 @@ namespace Fonetter {
 			var sv = GetScrollViewer();
 			if(currCount != lbTl.Items.Count) {
 				currCount = lbTl.Items.Count;
+				if(max == -1) {
+					max = sb.Maximum;
+					currVal = sb.Value;
+				}
+
 				if(sb.Value == 0.0f || max == sb.Maximum) {
 					max = sb.Maximum;
 				} else if(max < sb.Maximum) {
@@ -68,7 +72,8 @@ namespace Fonetter {
 				while(chkVal < currVal) {
 					chkVal += tw[nowCnt++].ActualHeight;
 				}
-				nowId = tw[nowCnt].data.TweetId;
+				if(tw.Count <= nowCnt) return;
+				else nowTime = (tw[nowCnt].data is RetweetData) ? (tw[nowCnt].data as RetweetData).RtingCreatedTime : tw[nowCnt].data.CreatedTime;
 			}
 		}
 
@@ -83,7 +88,10 @@ namespace Fonetter {
 				case NotifyCollectionChangedAction.Remove:
 					removeHeight = 0;
 					foreach(TweetDisp t in e.OldItems) {
-						if(t.data.TweetId < nowId) continue;
+						DateTime thistime;
+						if(t.data is RetweetData) thistime = (t.data as RetweetData).RtingCreatedTime;
+						else thistime = t.data.CreatedTime;
+						if(thistime < nowTime) continue;
 						removeHeight += t.ActualHeight;
 					}
 					break;

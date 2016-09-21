@@ -1,9 +1,63 @@
 ﻿using CoreTweet;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
 
 namespace Fonetter {
+	public class Consumers {
+		public string Name { get; private set; }
+		public string Key { get; private set; }
+		public string Secret { get; private set; }
+
+		public Consumers(string key, string secret, string name = "") {
+			this.Key = key;
+			this.Secret = secret;
+			this.Name = name;
+		}
+	}
+
+	public class Users {
+		public long Id { get; private set; }
+		public string ScreenName { get; private set; }
+		public List<Keys> Key { get; set; }
+
+		public Users(long id, string name, string consumer, string token, string secret) {
+			this.Id = id;
+			this.ScreenName = name;
+			this.Key = new List<Keys>() { new Keys(consumer, token, secret) };
+		}
+
+		public void UpdateName(string name) {
+			this.ScreenName = name;
+		}
+	}
+
+	public class Keys {
+		public string ConsumerKey { get; private set; }
+		public string AccessToken { get; private set; }
+		public string AccessSecret { get; private set; }
+
+		public Keys(string consumer, string token, string secret) {
+			this.ConsumerKey = consumer;
+			this.AccessToken = token;
+			this.AccessSecret = secret;
+		}
+	}
+
+	public class Selections {
+		public long Id { get; private set; }
+		public string ScreenName { get; set; }
+		public string ConsumerKey { get; set; }
+		public string Name { get; set; }
+
+		public Selections(long id, string key) {
+			this.Id = id;
+			this.ConsumerKey = key;
+		}
+	}
+
 	public class TimeLineGrid {
 		public double MinHeight { get; set; }
 		public double MinWidth { get; set; }
@@ -40,6 +94,7 @@ namespace Fonetter {
 		public bool IsFavorited { get; set; }
 		public string ViaUri { get; set; }
 		public string ViaName { get; set; }
+		public string[] MentionFor { get; set; }
 
 		public TweetData(Status status) {
 			TweetId = status.Id;
@@ -54,11 +109,19 @@ namespace Fonetter {
 			var mc = status.Source.GetDataFromLink();
 			ViaUri = mc[0].Groups["url"].Value;
 			ViaName = mc[0].Groups["text"].Value;
+
+			if(status.Entities.UserMentions != null && status.Entities.UserMentions.Length > 0) {
+				var mf = new List<string>();
+				foreach(var um in status.Entities.UserMentions) {
+					mf.Add(um.ScreenName);
+				}
+				MentionFor = mf.ToArray();
+			}
 		}
 	}
 
 	public class RetweetData : TweetData {
-		public long RtingId { get; set; }
+		public long RtingId { get; set; } //RT元はTweetData::TweetId
 		public string RtingScreenName { get; set; }
 		public string RtingUserName { get; set; }
 		public DateTime RtingCreatedTime { get; set; }
@@ -85,6 +148,28 @@ namespace Fonetter {
 
 		public AccountData(UserResponse userResponse) {
 			this.user = userResponse;
+		}
+	}
+
+	public enum ExceptionCheck {
+		Ok, 
+		Already, Blocked, ProtectedUser, Nothing, Duplicate,
+	}
+
+	public class ReplyControl {
+		public TextBox Text;
+		public Image Icon;
+		public int SelectedUser;
+		public TextBlock MentionText;
+		public Button MentionButton;
+		public long ReplyFor;
+
+		public ReplyControl(TextBox tbox, Image ibox, TextBlock mbox, Button bbox) {
+			Text = tbox;
+			Icon = ibox;
+			SelectedUser = 0;
+			MentionText = mbox;
+			MentionButton = bbox;
 		}
 	}
 }

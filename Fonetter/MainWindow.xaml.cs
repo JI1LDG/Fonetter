@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -24,31 +25,37 @@ namespace Fonetter {
 	public partial class MainWindow : Window {
 		private TimeLineGrid tlGrid;
 		private List<Accounts> ac;
-		private int accountNowSelected;
+		private ReplyControl replyUi;
+		private int accountNowSelected {
+			get {
+				return replyUi.SelectedUser;
+			}
+			set {
+				replyUi.SelectedUser = value;
+			}
+		}
 		private Accounts nowAccount { get { return ac[accountNowSelected]; } }
 		private int startIdx;
+		
 
 		public MainWindow() {
+			Sql.CheckDb();
+			var au = new Authorization();
+			if(au.AuthedToken == null || au.AuthedToken.Length == 0) au.ShowDialog();
+
+			InitializeComponent();
 			tlGrid = new Fonetter.TimeLineGrid() { MinHeight = 150, MinWidth = 300, MaxColumns = 4, MaxRows = 3, Mode = GridMode.Left, startIdx = 0, };
 			ac = new List<Accounts>();
-			using(var sr = new StreamReader("Keys.txt", System.Text.Encoding.UTF8)) {
-				while(sr.Peek() > 0) {
-					var keys = new string[4];
-					for(int i = 0; i < 4; i++) {
-						keys[i] = sr.ReadLine();
-					}
-					var token = Tokens.Create(keys[0], keys[1], keys[2], keys[3]);
-					var a = new Accounts(token, ac);
-					if(a.Data == null) break;
-					ac.Add(a);
-					tlGrid.AddTimeLine(new Fonetter.TimeLine(a.Tweets) { TlName = "TL: @" + a.Data.ScreenName , });
-				}
+			replyUi = new ReplyControl(tbTweet, imgAccount, tbReplyText, btnClearReply);
+			foreach(var aat in au.AuthedToken) {
+				var a = new Accounts(aat, ac, replyUi);
+				if(a.Data == null) continue;
+				ac.Add(a);
+				tlGrid.AddTimeLine(new TimeLine(a.Tweets) { TlName = "TL: @" + a.Data.ScreenName, });
 			}
-			InitializeComponent();
 
 			if(ac.Count > 0) {
 				imgAccount.AsyncLoad(ac[0].Data.IconUri);
-				accountNowSelected = 0;
 			}
 
 			grd_Adjust(grd.RenderSize);
@@ -159,16 +166,25 @@ namespace Fonetter {
 			imgAccount.AsyncLoad(ac[accountNowSelected].Data.IconUri);
 		}
 
-		private async void btnUpdate_Click(object sender, RoutedEventArgs e) {
+		private void btnUpdate_Click(object sender, RoutedEventArgs e) {
 			btnUpdate.IsEnabled = false;
-			try {
-				var response = await nowAccount.UpdateStatusAsync(tbTweet.Text);
-			} catch(TwitterException te) {
-				MessageBox.Show("ツイート失敗しました。 (" + te.Message + ")");
+			string error;
+			if(replyUi.ReplyFor == 0) {
+				error = nowAccount.UpdateStatus(tbTweet.Text);
+			} else {
+				error = nowAccount.UpdateStatus(tbTweet.Text, replyUi.ReplyFor);
+			}
+			if(error == ExceptionCheck.Ok.ToString()) {
+			} else if(error == ExceptionCheck.Duplicate.ToString()) {
+				MessageBox.Show("ツイートが重複しています。", "Error");
+			} else {
+				MessageBox.Show("ツイートに失敗しました。 (" + error + ")", "Error");
 			}
 			btnUpdate.IsEnabled = true;
 
 			tbTweet.Text = "";
+			tbReplyText.Text = "";
+			replyUi.ReplyFor = 0;
 		}
 
 		private void tbTweet_TextChanged(object sender, TextChangedEventArgs e) {
@@ -183,6 +199,44 @@ namespace Fonetter {
 			startIdx++;
 			startIdx %= tlGrid.Timelines.Count;
 			grd_Adjust(grd.RenderSize);
+		}
+
+		private void btnClearReply_Click(object sender, RoutedEventArgs e) {
+			btnClearReply.IsEnabled = false;
+			tbReplyText.Text = "";
+			replyUi.ReplyFor = 0;
+		}
+
+		private void miAuth_Click(object sender, RoutedEventArgs e) {
+			var au = new Authorization();
+			var newac = new List<Accounts>();
+			au.ShowDialog();
+			if(au.AuthedToken == null || au.AuthedToken.Count() == 0) Environment.Exit(0);
+			foreach(var a in ac) {
+				var token = au.AuthedToken.FirstOrDefault(x => x.UserId == a.Data.UserId);
+				a.StopStreaming();
+				if(token == null) {
+				} else {
+					var na = new Accounts(token, newac, replyUi, a.Tweets);
+					newac.Add(na);
+					tlGrid.AddTimeLine(new TimeLine(na.Tweets) { TlName = "TL: @" + na.Data.ScreenName, });
+				}
+			}
+			ac = newac;
+
+			if(ac.Count > 0) {
+				imgAccount.AsyncLoad(ac[0].Data.IconUri);
+			}
+
+			grd_Adjust(grd.RenderSize);
+		}
+
+		private void Window_Closing(object sender, CancelEventArgs e) {
+			ac = null;
+		}
+
+		private void Window_Closed(object sender, EventArgs e) {
+			Environment.Exit(0);
 		}
 	}
 }
